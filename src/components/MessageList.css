@@ -1,0 +1,26 @@
+.message-list {
+	background-color: white;
+	width : 80%;
+	height: 90%;
+	float: left;
+	overflow: scroll;
+}
+
+.message {
+	margin: 10px 15px;
+	padding: 5px;
+}
+
+.message-username {
+	padding: 0px;
+	margin: 5px;
+}
+
+.message-text {
+	padding: 5px 25px 5px 5px;
+	/*margin: 0px 15px;*/
+	background-color: lightblue;
+	border: 1px outset blue;
+	border-radius: 5px;
+	display: inline-block;
+}

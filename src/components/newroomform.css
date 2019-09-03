@@ -1,0 +1,7 @@
+.new-room-form {
+	height: 10%;
+	width: 20%;
+	/*background-color: black;*/
+	float: left;
+	overflow-x: scroll;
+}
