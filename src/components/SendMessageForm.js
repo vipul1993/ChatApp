@@ -17,6 +17,8 @@ class SendMessageForm extends Component {
 		// console.log("here",this);
 		e.preventDefault();
 		// console.log(e.target.value);
+		// console.log("here", e);
+		// console.log("there", e.target);
 		this.setState({
 			message: e.target.value, 
 		})
@@ -26,6 +28,9 @@ class SendMessageForm extends Component {
 		e.preventDefault();
 		// console.log('This is it...', this.state.message);
 		this.props.sendMessage(this.state.message)
+		this.setState({
+			message:''
+		})
 	}
 
 	render() {

@@ -5,6 +5,7 @@ import RoomList from './components/RoomList';
 import NewRoomForm from './components/NewRoomForm';
 import SendMessageForm from './components/SendMessageForm';
 import MessageList from './components/MessageList';
+// import RoomList from './components/RoomList';
 import {instanceLocator, tokenUrl} from './config';
 
 class App extends Component{
@@ -12,32 +13,46 @@ class App extends Component{
   constructor() {
     super();
     this.state = {
-      messages: []
+      messages: [],
+      joinableRooms: [],
+      joinedRooms: []
     }
-
     this.sendMessage = this.sendMessage.bind(this);
   }
                 
   componentDidMount() {
 
+    // console.log("tokenUrl", tokenUrl);
+     // console.log("Messages", this.state.messages)
+
     const chatManager = new Chatkit.ChatManager({
         instanceLocator,
-        userId : 'Vipul',
+        userId : "vipul",
         tokenProvider : new Chatkit.TokenProvider({
           url: tokenUrl
         }) 
-    })
+    });
 
-    // console.log(chatManager);
+    // console.log("chatManager",chatManager);
 
     chatManager.connect()
     .then(currentUser => {
-      // console.log('here',this);
+      console.log('currentUser',currentUser);
       this.currentUser = currentUser
+
+      this.currentUser.getJoinableRooms()
+      .then(joinableRooms => {
+        this.setState({
+          joinableRooms,
+          joinedRooms: this.currentUser.rooms
+        })
+      })
+      .catch(err => console.log("Error on joinableRooms: ", err))
+
       currentUser.subscribeToRoomMultipart({
-        roomId: "cf77ae37-adaf-4785-babe-4364c7b26e61",
+        roomId: "f664e0b6-793e-4811-af8c-ceb3b05e4f7a",
         hooks: {
-          onNewMessage: message => {
+          onMessage: message => {
             this.setState({
                 messages: [...this.state.messages, message]            
             })
@@ -45,7 +60,7 @@ class App extends Component{
         }
       })
       // console.log(currentUser.subscribeToRoom());
-    })
+    })  
     .catch(err => {
       console.log('Error on connection', err)
       })
@@ -53,19 +68,27 @@ class App extends Component{
   }
 
   sendMessage(text) {
-    this.currentUser.sendMessage({
+    console.log("currentUser", this.currentUser);
+    this.currentUser.sendSimpleMessage({
       text,
-      roomId: "cf77ae37-adaf-4785-babe-4364c7b26e61",
+      roomId: "f664e0b6-793e-4811-af8c-ceb3b05e4f7a",
     })
+  }
+
+  fetchRooms() {
+    this.setState({
+      rooms: [...this.state.rooms, this.currentUser.roomStore.rooms]
+    }) 
+    console.log("rooms", this.state.rooms)
   }
 
   render(){
 
-    console.log('this.state.messages:', this.state.messages);
+    // console.log('this.state.messages:', this.state.messages);
 
   return (
     <div className="app">
-      <RoomList />
+      <RoomList rooms={[...this.state.joinableRooms, ...this.state.joinedRooms]} />
       <MessageList messages={this.state.messages} />
       <NewRoomForm />
       <SendMessageForm sendMessage={this.sendMessage}/>
