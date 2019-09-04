@@ -13,17 +13,17 @@ class App extends Component{
   constructor() {
     super();
     this.state = {
+      roomId: null,
       messages: [],
       joinableRooms: [],
       joinedRooms: []
     }
     this.sendMessage = this.sendMessage.bind(this);
+    this.subscribeToRoom = this.subscribeToRoom.bind(this);
+    this.fetchRooms = this.fetchRooms.bind(this);
   }
                 
   componentDidMount() {
-
-    // console.log("tokenUrl", tokenUrl);
-     // console.log("Messages", this.state.messages)
 
     const chatManager = new Chatkit.ChatManager({
         instanceLocator,
@@ -33,24 +33,30 @@ class App extends Component{
         }) 
     });
 
-    // console.log("chatManager",chatManager);
+    // console.log("currentUser",currentUser);
 
     chatManager.connect()
     .then(currentUser => {
-      console.log('currentUser',currentUser);
       this.currentUser = currentUser
+      this.fetchRooms()
+      console.log("currentUser", currentUser);
+    })  
+    .catch(err => {console.log('Error on connection', err)}
+    )
+  }
 
-      this.currentUser.getJoinableRooms()
-      .then(joinableRooms => {
-        this.setState({
-          joinableRooms,
-          joinedRooms: this.currentUser.rooms
-        })
-      })
-      .catch(err => console.log("Error on joinableRooms: ", err))
+  sendMessage(text) {
+    this.currentUser.sendSimpleMessage({
+      text,
+      roomId: this.state.roomId,
+    })
+  }
 
-      currentUser.subscribeToRoomMultipart({
-        roomId: "f664e0b6-793e-4811-af8c-ceb3b05e4f7a",
+  subscribeToRoom(roomId) {
+
+        this.setState({messages: []})
+        this.currentUser.subscribeToRoomMultipart({
+        roomId,
         hooks: {
           onMessage: message => {
             this.setState({
@@ -59,36 +65,35 @@ class App extends Component{
           }
         }
       })
-      // console.log(currentUser.subscribeToRoom());
-    })  
-    .catch(err => {
-      console.log('Error on connection', err)
+      .then(room => {
+        this.setState({
+          roomId: room.id
+        })
+        this.fetchRooms()
       })
-
-  }
-
-  sendMessage(text) {
-    console.log("currentUser", this.currentUser);
-    this.currentUser.sendSimpleMessage({
-      text,
-      roomId: "f664e0b6-793e-4811-af8c-ceb3b05e4f7a",
-    })
+      .catch(err => console.log("Error on joinable rooms: ", err)) 
   }
 
   fetchRooms() {
-    this.setState({
-      rooms: [...this.state.rooms, this.currentUser.roomStore.rooms]
-    }) 
-    console.log("rooms", this.state.rooms)
+      this.currentUser.getJoinableRooms()
+      .then(joinableRooms => {
+        this.setState({
+          joinableRooms,
+          joinedRooms: this.currentUser.rooms
+        })
+        console.log("joinable rooms", this.state.joinableRooms);
+        console.log("joined rooms", this.state.joinedRooms);
+      })
+      .catch(err => console.log("Error on joinableRooms: ", err))
   }
 
   render(){
-
-    // console.log('this.state.messages:', this.state.messages);
-
   return (
     <div className="app">
-      <RoomList rooms={[...this.state.joinableRooms, ...this.state.joinedRooms]} />
+      <RoomList 
+        subscribeToRoom={this.subscribeToRoom} 
+        rooms={[...this.state.joinableRooms, ...this.state.joinedRooms]} 
+      />
       <MessageList messages={this.state.messages} />
       <NewRoomForm />
       <SendMessageForm sendMessage={this.sendMessage}/>

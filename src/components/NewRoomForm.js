@@ -5,7 +5,7 @@ class NewRoomForm extends Component{
 	render() {
 	return (
 		<div className="new-room-form">
-			<h1>NewRoomForm  +</h1>
+			<h3>NewRoomForm  +</h3>
 		</div>
 	);
 	}
